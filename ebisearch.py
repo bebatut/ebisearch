@@ -423,6 +423,79 @@ def get_domain_search_results(
     return r.json()['entries']
 
 
+def get_all_domain_search_results(
+    domain, query, fields, order=None, sortfield=None, sort=None, 
+    fieldurl=False, viewurl=False, facets=None, facetfields=None, 
+    facetcount=None, facetsdepth=None
+):
+    """Return the all the results for a query on a specific domain in EBI
+
+    domain: domain id in EBI (accessible with get_domains)
+    query: query for EBI (the searchable fields can be accessed with
+    get_searchable_fields)
+    fields: fields to retrieve for the query (the fields can be accessed with
+    get_retrievable_fields), separated by comma
+    order: order to sort the results (ascending or descending), should come
+    along with "sortfield" and not allowed to use with "sort" parameters
+    sortfield: single field identifier to sort on (the fields can be accessed
+    with get_sortable_fields)
+    sort: comma separated values of sorting criteria with field_id:order
+    (e.g. boost:descending,length:descending), should not be used in
+    conjunction with any of 'sortfield' and 'order' parameters
+    fieldurl: boolean to indicate whether field links are included (the
+    returned links mean direct URLs to the data entries in original portals)
+    viewurl: boolean to indicate whether other view links (than fieldurl) on an
+    entry are included
+    facets: comma separated values of facet selections to apply on search
+    results with facet_id:facet_value (e.g. keywords:Glycolysis). The facet id
+    can be accessed with get_facet_fields
+    facetfields: comma separated values of field identifiers associated with
+    facets to retrieve
+    facetcount: number of facet values to retrieve
+    facetsdepth: number of level in the hierarchy to retrieve
+    """
+    result_nb = get_number_of_results(domain, query)
+    quotient = result_nb / sizeLimit
+    start = 0
+    all_results = []
+    for i in range(quotient):
+        start = sizeLimit*i
+        all_results.extend(get_domain_search_results(
+            domain=domain,
+            query=query,
+            fields=fields,
+            size=sizeLimit,
+            start=start,
+            order=order,
+            sortfield=sortfield,
+            sort=sort,
+            fieldurl=fieldurl,
+            viewurl=viewurl,
+            facets=facets,
+            facetfields=facetfields,
+            facetcount=facetcount,
+            facetsdepth=facetsdepth))
+    if (result_nb % 100) > 0:
+        start = sizeLimit * quotient
+        remainder = result_nb - start
+        all_results.extend(get_domain_search_results(
+            domain=domain,
+            query=query,
+            fields=fields,
+            size=remainder,
+            start=start,
+            order=order,
+            sortfield=sortfield,
+            sort=sort,
+            fieldurl=fieldurl,
+            viewurl=viewurl,
+            facets=facets,
+            facetfields=facetfields,
+            facetcount=facetcount,
+            facetsdepth=facetsdepth))
+    return all_results
+
+
 def get_entries(domain, entryids, fields, fieldurl=False, viewurl=False):
     """Return content of entries on a specific domain in EBI
 
