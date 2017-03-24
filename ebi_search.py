@@ -299,10 +299,28 @@ def check_topterms_field(field, domain):
 
 
 def check_size(size, limit=100):
+    """Check that the size is lower than a given limit
+
+    size: value to check
+    limit: threshold
+    """
     if size > limit:
         err_str = "Size (number of entries to retrieve) must be lower "
         err_str += "than %s" % (limit)
         raise ValueError(err_str)
+
+
+def check_start(start, limit=100):
+    """Check that the start is lower than a given limit
+
+    start: value to check
+    limit: threshold
+    """
+    if start > limit:
+        err_str = "Start (index of the first entry in the results) "
+        err_str += "must be lower than %s" % (limit)
+        raise ValueError(err_str)
+
 
 def get_domain_search_results(
     domain, query, fields, size=None, start=None, order=None, sortfield=None,
@@ -357,10 +375,7 @@ def get_domain_search_results(
         url += '&size=%s' % (size)
 
     if start is not None:
-        if start > 250000:
-            err_str = "Start (index of the first entry in the results) "
-            err_str += "must be lower than 250,000"
-            raise ValueError(err_str)
+        check_start(start, 250000)
         if start > result_nb:
             err_str = "Start (index of the first entry in the results) must "
             err_str += "be lower than the number of expected results for the "
@@ -479,7 +494,7 @@ def get_field_topterms(
     url += '?fieldid=' + fieldid
 
     if size is not None:
-        check_size(size, limit)
+        check_size(size, 100)
         url += '&size=%s' % (size)
 
     if excludes is not None:
@@ -487,6 +502,65 @@ def get_field_topterms(
 
     if excludesets is not None:
         url += '&excludesets=%s' % (excludesets)
+
+
+def get_number_of_morelikethis(domain, entryid):
+    """"Return the number of entries similar to an entry of a specific domain 
+    in EBI
+
+    domain: domain id in EBI
+    entryid: entry id
+    """
+    url = baseUrl + '/'
+
+    check_domain(domain)
+    url += domain
+    url += '/entry/' + entryid
+    url += '/morelikethis'
+    url += '?size=0'
+    r = requests.get(
+        url,
+        headers={"accept": "application/json"})
+    r.raise_for_status()
+    return r.json()['hitCount']
+
+
+def get_morelikethis(
+    domain, entryid, size=None, start=0, excludes=None, excludesets=None):
+    """Return a list of similar entries to an entry of a specific domain in EBI
+
+    domain: domain id in EBI (accessible with get_domains)
+    entryid: entry id
+    size: number of entries to retieve
+    fields: field id (the fields can be accessed with get_topterms_fields)
+    
+    excludes: comma separated values of terms to be excluded
+    excludesets: comma separated values of stop-word sets to be excluded
+    """
+    url = baseUrl + '/'
+
+    check_domain(domain)
+    url += domain
+
+    url += '/entry/' + entryid
+
+    if size is not None:
+        result_nb = get_number_of_morelikethis(domain, entryid)
+        check_size(size, 100)
+        if size > result_nb:
+            err_str = "Size (number of entries to retrieve) must be lower "
+            err_str += "than the number of expected results for the query"
+            raise ValueError(err_str)
+        url += '&size=%s' % (size)
+
+    if start is not None:
+        check_start(start, 250000)
+        if start > result_nb:
+            err_str = "Start (index of the first entry in the results) must "
+            err_str += "be lower than the number of expected results for the "
+            err_str += "query"
+            raise ValueError(err_str)
+        url += '&start=%s' % (start)
 
 if __name__ == '__main__':
     #print(get_domain_details("metagenomics_runs"))
@@ -531,9 +605,13 @@ if __name__ == '__main__':
     #     fields="id,experiment_type")
     # print(entries)
     # 
-    domains = get_domains(verbose=False)
-    for domain in domains:
-        topterms = get_topterms_fields("go",verbose=False)
-        if len(topterms) > 0:
-            print(domain)
-            print(topterms)
+    # domains = get_domains(verbose=False)
+    # for domain in domains:
+    #     topterms = get_topterms_fields("go",verbose=False)
+    #     if len(topterms) > 0:
+    #         print(domain)
+    #         print(topterms)
+    # Test get_morelikethis
+    print(get_number_of_morelikethis(
+        domain="metagenomics_runs",
+        entryid="ERR1135279"))
