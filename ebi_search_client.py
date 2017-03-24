@@ -323,7 +323,7 @@ def check_start(start, limit=100):
 
 
 def get_domain_search_results(
-    domain, query, fields, size=None, start=None, order=None, sortfield=None,
+    domain, query, fields, size=15, start=0, order=None, sortfield=None,
     sort=None, fieldurl=False, viewurl=False, facets=None, facetfields=None,
     facetcount=None, facetsdepth=None
 ):
@@ -366,22 +366,20 @@ def get_domain_search_results(
     url += '&fields=' + fields
 
     result_nb = get_number_of_results(domain, query)
-    if size is not None:
-        check_size(size, 100)
-        if size > result_nb:
-            err_str = "Size (number of entries to retrieve) must be lower "
-            err_str += "than the number of expected results for the query"
-            raise ValueError(err_str)
-        url += '&size=%s' % (size)
+    check_size(size, 100)
+    if size > result_nb:
+        err_str = "Size (number of entries to retrieve) must be lower "
+        err_str += "than the number of expected results for the query"
+        raise ValueError(err_str)
+    url += '&size=%s' % (size)
 
-    if start is not None:
-        check_start(start, 250000)
-        if start > result_nb:
-            err_str = "Start (index of the first entry in the results) must "
-            err_str += "be lower than the number of expected results for the "
-            err_str += "query"
-            raise ValueError(err_str)
-        url += '&start=%s' % (start)
+    check_start(start, 250000)
+    if start > result_nb:
+        err_str = "Start (index of the first entry in the results) must "
+        err_str += "be lower than the number of expected results for the "
+        err_str += "query"
+        raise ValueError(err_str)
+    url += '&start=%s' % (start)
 
     if order is not None or sortfield is not None:
         if sortfield is None:
@@ -476,7 +474,7 @@ def get_entries(domain, entryids, fields, fieldurl=False, viewurl=False):
 
 
 def get_field_topterms(
-    domain, fieldid, size=None, excludes=None, excludesets=None):
+    domain, fieldid, size=15, excludes=None, excludesets=None):
     """Return a list of top terms in a field of a specific domain in EBI
 
     domain: domain id in EBI (accessible with get_domains)
@@ -493,9 +491,8 @@ def get_field_topterms(
     check_topterms_field(fieldid, domain)
     url += '?fieldid=' + fieldid
 
-    if size is not None:
-        check_size(size, 100)
-        url += '&size=%s' % (size)
+    check_size(size, 100)
+    url += '&size=%s' % (size)
 
     if excludes is not None:
         url += '&excludes=%s' % (excludes)
@@ -526,7 +523,7 @@ def get_number_of_morelikethis(domain, entryid):
 
 
 def get_morelikethis(
-    domain, entryid, size=None, start=0, excludes=None, excludesets=None):
+    domain, entryid, size=15, start=0, excludes=None, excludesets=None):
     """Return a list of similar entries to an entry of a specific domain in EBI
 
     domain: domain id in EBI (accessible with get_domains)
@@ -544,23 +541,23 @@ def get_morelikethis(
 
     url += '/entry/' + entryid
 
-    if size is not None:
-        result_nb = get_number_of_morelikethis(domain, entryid)
-        check_size(size, 100)
-        if size > result_nb:
-            err_str = "Size (number of entries to retrieve) must be lower "
-            err_str += "than the number of expected results for the query"
-            raise ValueError(err_str)
-        url += '&size=%s' % (size)
+    result_nb = get_number_of_morelikethis(domain, entryid)
+    check_size(size, 100)
+    if size > result_nb:
+        err_str = "Size (number of entries to retrieve) must be lower "
+        err_str += "than the number of expected results for the query"
+        raise ValueError(err_str)
+    url += '&size=%s' % (size)
 
-    if start is not None:
-        check_start(start, 250000)
-        if start > result_nb:
-            err_str = "Start (index of the first entry in the results) must "
-            err_str += "be lower than the number of expected results for the "
-            err_str += "query"
-            raise ValueError(err_str)
-        url += '&start=%s' % (start)
+    check_start(start, 250000)
+    if start > result_nb:
+        err_str = "Start (index of the first entry in the results) must "
+        err_str += "be lower than the number of expected results for the "
+        err_str += "query"
+        raise ValueError(err_str)
+    url += '&start=%s' % (start)
+
+    
 
 
 if __name__ == '__main__':
