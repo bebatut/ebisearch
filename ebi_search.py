@@ -4,11 +4,7 @@ import requests
 
 baseUrl = 'http://www.ebi.ac.uk/ebisearch/ws/rest'
 
-
-# %prog getFacetedResults <domain> <query> <fields> [OPTIONS: --size | --start | --fieldurl | --viewurl | --sortfield | --order | --sort | --facetcount | --facetfields | --facets | --facetsdepth ]
-
-# %prog getEntries        <domain> <entryids> <fields> [OPTIONS: --fieldurl | --viewurl]
-# 
+ 
 # %prog getDomainsReferencedInDomain <domain>
 # %prog getDomainsReferencedInEntry  <domain> <entryid>
 # %prog getReferencedEntries         <domain> <entryids> <referencedDomain> <fields> [OPTIONS: --size | --start | --fieldurl | --viewurl | --facetcount | --facetfields | --facets]
@@ -222,6 +218,15 @@ def get_facet_fields(domain, verbose=True):
     return get_specific_fields(domain, "facet", verbose)
 
 
+def get_topterms_fields(domain, verbose=True):
+    """Return the topterms fields of a specific domain in EBI
+
+    domain: domain id in EBI
+    verbose: boolean to define the printing info
+    """
+    return get_specific_fields(domain, "topterms", verbose)
+
+
 def check_order(order):
     """Check if an order is either ascending or descending
 
@@ -275,6 +280,21 @@ def check_facet_field(field, domain):
         err_str += "for the domain %s" % (domain)
         err_str += "The list of sortable fields for the domain can be "
         err_str += "accessed with get_facet_fields"
+        raise ValueError(err_str)
+
+
+def check_topterms_field(field, domain):
+    """Check if a field is topterm for the domain
+
+    field: field to check
+    domain: domain id in EBI (accessible with get_domains)
+    """
+    topterms_fields = get_topterms_fields(domain, verbose=False)
+    if field not in topterms_fields:
+        err_str = "The field %s is not a topterms field " % (field)
+        err_str += "for the domain %s" % (domain)
+        err_str += "The list of sortable fields for the domain can be "
+        err_str += "accessed with get_topterms_fields"
         raise ValueError(err_str)
 
 
@@ -398,8 +418,47 @@ def get_domain_search_results(
     return r.json()['entries']
 
 
+def get_entries(domain, entryids, fields, fieldurl=False, viewurl=False):
+    """Return content of entries on a specific domain in EBI
+
+    domain: domain id in EBI (accessible with get_domains)
+    entryids: comma seperated values of entry identifiers
+    fields: fields to retrieve for the query (the fields can be accessed with
+    get_retrievable_fields), separated by comma
+    fieldurl: boolean to indicate whether field links are included (the
+    returned links mean direct URLs to the data entries in original portals)
+    viewurl: boolean to indicate whether other view links (than fieldurl) on an
+    entry are included
+    """
+    url = baseUrl + '/'
+
+    check_domain(domain)
+    url += domain
+
+    url += '/entry/' + entryids
+
+    check_retrievable_fields(fields, domain)
+    url += '?fields=' + fields
+
+    if fieldurl:
+        url += '&fieldurl=true'
+    else:
+        url += '&fieldurl=false'
+
+    if viewurl:
+        url += '&viewurl=true'
+    else:
+        url += '&viewurl=false'
+
+    r = requests.get(
+        url,
+        headers={"accept": "application/json"})
+    r.raise_for_status()
+    return r.json()['entries']
+
+
 if __name__ == '__main__':
-    # print(get_domain_details("allebi"))
+    #print(get_domain_details("metagenomics_runs"))
     # print(get_number_of_results(
     #     "metagenomics_runs",
     #     "experiment_type:(metagenomic)"))
@@ -414,22 +473,27 @@ if __name__ == '__main__':
     #     domain="metagenomics_runs",
     #     query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
     #     fields="id,experiment_tye")
-    res = get_domain_search_results(
+    # res = get_domain_search_results(
+    #     domain="metagenomics_runs",
+    #     query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
+    #     fields="id,experiment_type",
+    #     size=20)
+    # print(res)
+    # res = get_domain_search_results(
+    #     domain="metagenomics_runs",
+    #     query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
+    #     fields="id,experiment_type",
+    #     size=10)
+    # print(res)
+    # res = get_domain_search_results(
+    #     domain="metagenomics_runs",
+    #     query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
+    #     fields="id,experiment_type",
+    #     size=10,
+    #     start=10)
+    # print(res)
+    entries = get_entries(
         domain="metagenomics_runs",
-        query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
-        fields="id,experiment_type",
-        size=20)
-    print(res)
-    res = get_domain_search_results(
-        domain="metagenomics_runs",
-        query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
-        fields="id,experiment_type",
-        size=10)
-    print(res)
-    res = get_domain_search_results(
-        domain="metagenomics_runs",
-        query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
-        fields="id,experiment_type",
-        size=10,
-        start=10)
-    print(res)
+        entryids="ERR1135279",
+        fields="id,experiment_type")
+    print(entries)
