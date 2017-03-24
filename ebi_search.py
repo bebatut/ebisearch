@@ -298,6 +298,12 @@ def check_topterms_field(field, domain):
         raise ValueError(err_str)
 
 
+def check_size(size, limit=100):
+    if size > limit:
+        err_str = "Size (number of entries to retrieve) must be lower "
+        err_str += "than %s" % (limit)
+        raise ValueError(err_str)
+
 def get_domain_search_results(
     domain, query, fields, size=None, start=None, order=None, sortfield=None,
     sort=None, fieldurl=False, viewurl=False, facets=None, facetfields=None,
@@ -343,10 +349,7 @@ def get_domain_search_results(
 
     result_nb = get_number_of_results(domain, query)
     if size is not None:
-        if size > 100:
-            err_str = "Size (number of entries to retrieve) must be lower "
-            err_str += "than 100"
-            raise ValueError(err_str)
+        check_size(size, 100)
         if size > result_nb:
             err_str = "Size (number of entries to retrieve) must be lower "
             err_str += "than the number of expected results for the query"
@@ -457,6 +460,34 @@ def get_entries(domain, entryids, fields, fieldurl=False, viewurl=False):
     return r.json()['entries']
 
 
+def get_field_topterms(
+    domain, fieldid, size=None, excludes=None, excludesets=None):
+    """Return a list of top terms in a field of a specific domain in EBI
+
+    domain: domain id in EBI (accessible with get_domains)
+    fieldid: field id (the fields can be accessed with get_topterms_fields)
+    size: number of entries to retieve
+    excludes: comma separated values of terms to be excluded
+    excludesets: comma separated values of stop-word sets to be excluded
+    """
+    url = baseUrl + '/'
+
+    check_domain(domain)
+    url += domain
+
+    check_topterms_field(fieldid, domain)
+    url += '?fieldid=' + fieldid
+
+    if size is not None:
+        check_size(size, limit)
+        url += '&size=%s' % (size)
+
+    if excludes is not None:
+        url += '&excludes=%s' % (excludes)
+
+    if excludesets is not None:
+        url += '&excludesets=%s' % (excludesets)
+
 if __name__ == '__main__':
     #print(get_domain_details("metagenomics_runs"))
     # print(get_number_of_results(
@@ -465,11 +496,12 @@ if __name__ == '__main__':
     # print(get_domains(verbose = True))
     # print_domain_hierarchy()
     # get_fields("metagenomics_runs")
-    # get_results(
+    # # Test get_domain_search_results
+    # get_domain_search_results(
     #     domain="metagenomics_run",
     #     query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
     #     fields="id,experiment_type")
-    # get_results(
+    # get_domain_search_results(
     #     domain="metagenomics_runs",
     #     query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
     #     fields="id,experiment_tye")
@@ -492,8 +524,16 @@ if __name__ == '__main__':
     #     size=10,
     #     start=10)
     # print(res)
-    entries = get_entries(
-        domain="metagenomics_runs",
-        entryids="ERR1135279",
-        fields="id,experiment_type")
-    print(entries)
+    # # Test get_entries
+    # entries = get_entries(
+    #     domain="metagenomics_runs",
+    #     entryids="ERR1135279",
+    #     fields="id,experiment_type")
+    # print(entries)
+    # 
+    domains = get_domains(verbose=False)
+    for domain in domains:
+        topterms = get_topterms_fields("go",verbose=False)
+        if len(topterms) > 0:
+            print(domain)
+            print(topterms)
