@@ -3,8 +3,8 @@
 import requests
 
 baseUrl = 'http://www.ebi.ac.uk/ebisearch/ws/rest'
-
-class 
+sizeLimit = 100
+startLimit = 250000
 
 def get_domain_details(domain):
     """Return a dictionary with the details of a given domain in EBI
@@ -287,27 +287,27 @@ def check_topterms_field(field, domain):
         raise ValueError(err_str)
 
 
-def check_size(size, limit=100):
+def check_size(size):
     """Check that the size is lower than a given limit
 
     size: value to check
     limit: threshold
     """
-    if size > limit:
+    if size > sizeLimit:
         err_str = "Size (number of entries to retrieve) must be lower "
-        err_str += "than %s" % (limit)
+        err_str += "than %s" % (sizeLimit)
         raise ValueError(err_str)
 
 
-def check_start(start, limit=100):
+def check_start(start):
     """Check that the start is lower than a given limit
 
     start: value to check
     limit: threshold
     """
-    if start > limit:
+    if start > startLimit:
         err_str = "Start (index of the first entry in the results) "
-        err_str += "must be lower than %s" % (limit)
+        err_str += "must be lower than %s" % (startLimit)
         raise ValueError(err_str)
 
 
@@ -355,14 +355,14 @@ def get_domain_search_results(
     url += '&fields=' + fields
 
     result_nb = get_number_of_results(domain, query)
-    check_size(size, 100)
+    check_size(size)
     if size > result_nb:
         err_str = "Size (number of entries to retrieve) must be lower "
         err_str += "than the number of expected results for the query"
         raise ValueError(err_str)
     url += '&size=%s' % (size)
 
-    check_start(start, 250000)
+    check_start(start)
     if start > result_nb:
         err_str = "Start (index of the first entry in the results) must "
         err_str += "be lower than the number of expected results for the "
@@ -480,7 +480,7 @@ def get_field_topterms(
     check_topterms_field(fieldid, domain)
     url += '?fieldid=' + fieldid
 
-    check_size(size, 100)
+    check_size(size)
     url += '&size=%s' % (size)
 
     if excludes is not None:
@@ -546,14 +546,14 @@ def get_morelikethis(
     url += '/morelikethis'
 
     result_nb = get_number_of_morelikethis(domain, entryid)
-    check_size(size, 100)
+    check_size(size)
     if size > result_nb:
         err_str = "Size (number of entries to retrieve) must be lower "
         err_str += "than the number of expected results for the query"
         raise ValueError(err_str)
     url += '?size=%s' % (size)
 
-    check_start(start, 250000)
+    check_start(start)
     if start > result_nb:
         err_str = "Start (index of the first entry in the results) must "
         err_str += "be lower than the number of expected results for the "
