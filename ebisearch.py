@@ -4,18 +4,7 @@ import requests
 
 baseUrl = 'http://www.ebi.ac.uk/ebisearch/ws/rest'
 
- 
-# %prog getDomainsReferencedInDomain <domain>
-# %prog getDomainsReferencedInEntry  <domain> <entryid>
-# %prog getReferencedEntries         <domain> <entryids> <referencedDomain> <fields> [OPTIONS: --size | --start | --fieldurl | --viewurl | --facetcount | --facetfields | --facets]
-# 
-# %prog getTopTerms       <domain> <field> [OPTIONS: --size | --excludes | --excludesets]
-# 
-# %prog getAutoComplete   <domain> <term>
-
-# %prog getMoreLikeThis   <domain> <entryid> <fields> [OPTIONS: --size | --start | --fieldurl | --viewurl | --mltfields | --mintermfreq | --mindocfreq | --maxqueryterm | --excludes | --excludesets]
-# %prog getExtendedMoreLikeThis
-
+class 
 
 def get_domain_details(domain):
     """Return a dictionary with the details of a given domain in EBI
@@ -523,14 +512,28 @@ def get_number_of_morelikethis(domain, entryid):
 
 
 def get_morelikethis(
-    domain, entryid, size=15, start=0, excludes=None, excludesets=None):
+    domain, entryid, size=15, start=0, fields=None, fieldurl=False,
+    viewurl=False, mltfields=None, mintermfreq=None, mindocfreq=None,
+    maxqueryterm=None, excludes=None, excludesets=None):
     """Return a list of similar entries to an entry of a specific domain in EBI
 
     domain: domain id in EBI (accessible with get_domains)
     entryid: entry id
     size: number of entries to retieve
+    start: index of the first entry in the results
     fields: field id (the fields can be accessed with get_topterms_fields)
-    
+    fieldurl: boolean to indicate whether field links are included (the
+    returned links mean direct URLs to the data entries in original portals)
+    viewurl: boolean to indicate whether other view links (than fieldurl) on an
+    entry are included
+    mltfields: comma separated values of field identifiers to be used for 
+    generating a query
+    mintermfreq: minimum term frequency (any terms whose frequency is below this 
+    value will be ignore from a base entry)
+    mindocfreq: maximum document frequency (any terms which occur in at least 
+    this number of entries will be ignored)
+    maxqueryterm: maximum number of query terms that will be included in any 
+    generated query (max. 25)
     excludes: comma separated values of terms to be excluded
     excludesets: comma separated values of stop-word sets to be excluded
     """
@@ -540,6 +543,7 @@ def get_morelikethis(
     url += domain
 
     url += '/entry/' + entryid
+    url += '/morelikethis'
 
     result_nb = get_number_of_morelikethis(domain, entryid)
     check_size(size, 100)
@@ -547,7 +551,7 @@ def get_morelikethis(
         err_str = "Size (number of entries to retrieve) must be lower "
         err_str += "than the number of expected results for the query"
         raise ValueError(err_str)
-    url += '&size=%s' % (size)
+    url += '?size=%s' % (size)
 
     check_start(start, 250000)
     if start > result_nb:
@@ -557,59 +561,35 @@ def get_morelikethis(
         raise ValueError(err_str)
     url += '&start=%s' % (start)
 
+    if fields is not None:
+        url += '&fields=%s' % (fields)
+
+    if fieldurl:
+        url += '&fieldurl=true'
+    else:
+        url += '&fieldurl=false'
+
+    if viewurl:
+        url += '&viewurl=true'
+    else:
+        url += '&viewurl=false' 
+
+    if mltfields is not None:
+        url += '&fields=%s' % (mltfields)
+    if mintermfreq is not None:
+        url += '&fields=%s' % (mintermfreq)
+    if mindocfreq is not None:
+        url += '&fields=%s' % (mindocfreq)
+    if maxqueryterm is not None:
+        url += '&fields=%s' % (maxqueryterm)
+    if excludes is not None:
+        url += '&fields=%s' % (excludes)
+    if excludesets is not None:
+        url += '&fields=%s' % (excludesets)
+
+    r = requests.get(
+        url,
+        headers={"accept": "application/json"})
+    r.raise_for_status()
+    return r.json()['entries']
     
-
-
-if __name__ == '__main__':
-    #print(get_domain_details("metagenomics_runs"))
-    # print(get_number_of_results(
-    #     "metagenomics_runs",
-    #     "experiment_type:(metagenomic)"))
-    # print(get_domains(verbose = True))
-    # print_domain_hierarchy()
-    # get_fields("metagenomics_runs")
-    # # Test get_domain_search_results
-    # get_domain_search_results(
-    #     domain="metagenomics_run",
-    #     query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
-    #     fields="id,experiment_type")
-    # get_domain_search_results(
-    #     domain="metagenomics_runs",
-    #     query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
-    #     fields="id,experiment_tye")
-    # res = get_domain_search_results(
-    #     domain="metagenomics_runs",
-    #     query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
-    #     fields="id,experiment_type",
-    #     size=20)
-    # print(res)
-    # res = get_domain_search_results(
-    #     domain="metagenomics_runs",
-    #     query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
-    #     fields="id,experiment_type",
-    #     size=10)
-    # print(res)
-    # res = get_domain_search_results(
-    #     domain="metagenomics_runs",
-    #     query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
-    #     fields="id,experiment_type",
-    #     size=10,
-    #     start=10)
-    # print(res)
-    # # Test get_entries
-    # entries = get_entries(
-    #     domain="metagenomics_runs",
-    #     entryids="ERR1135279",
-    #     fields="id,experiment_type")
-    # print(entries)
-    # 
-    # domains = get_domains(verbose=False)
-    # for domain in domains:
-    #     topterms = get_topterms_fields("go",verbose=False)
-    #     if len(topterms) > 0:
-    #         print(domain)
-    #         print(topterms)
-    # Test get_morelikethis
-    print(get_number_of_morelikethis(
-        domain="metagenomics_runs",
-        entryid="ERR1135279"))
