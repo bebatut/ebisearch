@@ -2,7 +2,6 @@
 
 import requests
 
-
 baseUrl = 'http://www.ebi.ac.uk/ebisearch/ws/rest'
 
 
@@ -32,12 +31,12 @@ def get_domain_details(domain):
     url = baseUrl + '/' + domain
     r = requests.get(
         url,
-        headers={"accept":"application/json"})
+        headers={"accept": "application/json"})
     r.raise_for_status()
     return r.json()
 
 
-def get_details_and_subdomains(domain, level, verbose = False):
+def get_details_and_subdomains(domain, level, verbose=False):
     """Return the details (id and name) for the domain and its subdomains
 
     domain: domain id in EBI
@@ -45,7 +44,7 @@ def get_details_and_subdomains(domain, level, verbose = False):
     """
     domain_details = {domain['id']: domain['name']}
     if verbose:
-        print("\t"*level + "%s -- %s" %(domain['id'], domain['name']))
+        print("\t"*level + "%s -- %s" % (domain['id'], domain['name']))
 
     if "subdomains" not in domain:
         return domain_details
@@ -56,7 +55,7 @@ def get_details_and_subdomains(domain, level, verbose = False):
     return domain_details
 
 
-def get_domains(verbose = False):
+def get_domains(verbose=False):
     """Return the list of domains in EBI as a dictionary with the key being the
     domain id and the value the domain name
 
@@ -72,19 +71,33 @@ def get_domains(verbose = False):
 def print_domain_hierarchy():
     """Print the hierarchy of the domains
     """
-    get_domains(verbose = True)
+    get_domains(verbose=True)
+
+
+def check_domain(domain):
+    """Check if a domain exist in EBI
+
+    domain: id of a domain to check
+    """
+    if domain not in get_domains(verbose=False):
+        err_str = "The domain does not correspond to the id of a known domain"
+        err_str += " in EBI. "
+        err_str += "The list of EBI domains and their id can be "
+        err_str += "accessed with get_domains"
+        raise ValueError(err_str)
 
 
 def get_number_of_results(domain, query):
     """Return the number of results for a query on a specific domain in EBI
 
-    domain: domain id in EBI 
+    domain: domain id in EBI
     query: query for EBI
     """
-    url = baseUrl + '/' + domain + '?query=' + query +'&size=0'
+    check_domain(domain)
+    url = baseUrl + '/' + domain + '?query=' + query + '&size=0'
     r = requests.get(
         url,
-        headers={"accept":"application/json"})
+        headers={"accept": "application/json"})
     r.raise_for_status()
     return r.json()['hitCount']
 
@@ -92,7 +105,7 @@ def get_number_of_results(domain, query):
 def get_subdomain_fields(domain):
     """Return the fields of a domain and its subdomains
 
-    domain: domain id in EBI 
+    domain: domain id in EBI
     """
     fields = {
         "searchable": {},
@@ -119,12 +132,13 @@ def get_subdomain_fields(domain):
     return fields
 
 
-def get_fields(domain, verbose = True):
+def get_fields(domain, verbose=True):
     """Return the fields (for different type) of a specific domain in EBI
 
     domain: domain id in EBI
     verbose: boolean to define the printing info
     """
+    check_domain(domain)
     domain_details = get_domain_details(domain)
     fields = {
         "searchable": {},
@@ -143,29 +157,279 @@ def get_fields(domain, verbose = True):
 
     if verbose:
         for field_type in fields:
-            print("%s" %(field_type))
+            print("%s" % (field_type))
             for field in fields[field_type]:
-                print("\t%s" %(field))
+                print("\t%s" % (field))
     return fields
 
 
-def get_results(domain, query, fields, size='', start='', fieldurl='', viewurl='', sortfield='', order='', sort=''):
+def get_specific_fields(domain, field_type, verbose=True):
+    """Return the fields of a given type for a specific domain in EBI
+
+    domain: domain id in EBI
+    field_type: type of field to extract (searchable, retrievable, sortable,
+    facet, topterms)
+    verbose: boolean to define the printing info
+    """
+    field_types = [
+        "searchable", "retrievable", "sortable", "facet", "topterms"]
+    if field_type not in field_types:
+        err_str = "The type of field to extract must be 'searchable', "
+        err_str += "'retrievable', 'sortable', 'facet' or 'topterms'"
+        raise ValueError(err_str)
+
+    fields = get_fields(domain, verbose=False)[field_type]
+    if verbose:
+        print("%s fields for %s" % (field_type, domain))
+        for field in fields:
+            print("%s" % (field))
+    return fields
+
+
+def get_searchable_fields(domain, verbose=True):
+    """Return the searchable fields for a specific domain in EBI
+
+    domain: domain id in EBI
+    verbose: boolean to define the printing info
+    """
+    return get_specific_fields(domain, "searchable", verbose)
+
+
+def get_retrievable_fields(domain, verbose=True):
+    """Return the retrievable fields of a specific domain in EBI
+
+    domain: domain id in EBI
+    verbose: boolean to define the printing info
+    """
+    return get_specific_fields(domain, "retrievable", verbose)
+
+
+def get_sortable_fields(domain, verbose=True):
+    """Return the sortable fields of a specific domain in EBI
+
+    domain: domain id in EBI
+    verbose: boolean to define the printing info
+    """
+    return get_specific_fields(domain, "sortable", verbose)
+
+
+def get_facet_fields(domain, verbose=True):
+    """Return the facet fields of a specific domain in EBI
+
+    domain: domain id in EBI
+    verbose: boolean to define the printing info
+    """
+    return get_specific_fields(domain, "facet", verbose)
+
+
+def check_order(order):
+    """Check if an order is either ascending or descending
+
+    order: order to check
+    """
+    if order != "ascending" and order != "descending":
+        err_str = "Order value must be either 'ascending' or 'descending'"
+        raise ValueError(err_str)
+
+
+def check_retrievable_fields(fields, domain):
+    """Check if the fields are retrievable for a domain
+
+    field: field to check
+    domain: domain id in EBI (accessible with get_domains)
+    """
+    retrievable_fields = get_retrievable_fields(domain, verbose=False)
+    for field in fields.split(","):
+        if field not in retrievable_fields:
+            err_str = "The field %s does not correspond " % (field)
+            err_str += "to a retrievable field for the domain. "
+            err_str += "The list of retrievable fields for a domain can be "
+            err_str += "accessed with get_retrievable_fields"
+            raise ValueError(err_str)
+
+
+def check_sortable_field(field, domain):
+    """Check if a field is sortable for the domain
+
+    field: field to check
+    domain: domain id in EBI (accessible with get_domains)
+    """
+    sortable_fields = get_sortable_fields(domain, verbose=False)
+    if field not in sortable_fields:
+        err_str = "The field %s is not a sortable field " % (field)
+        err_str += "for the domain %s" % (domain)
+        err_str += "The list of sortable fields for the domain can be "
+        err_str += "accessed with get_sortable_fields"
+        raise ValueError(err_str)
+
+
+def check_facet_field(field, domain):
+    """Check if a field is facet for the domain
+
+    field: field to check
+    domain: domain id in EBI (accessible with get_domains)
+    """
+    facet_fields = get_facet_fields(domain, verbose=False)
+    if field not in facet_fields:
+        err_str = "The field %s is not a facet field " % (field)
+        err_str += "for the domain %s" % (domain)
+        err_str += "The list of sortable fields for the domain can be "
+        err_str += "accessed with get_facet_fields"
+        raise ValueError(err_str)
+
+
+def get_domain_search_results(
+    domain, query, fields, size=None, start=None, order=None, sortfield=None,
+    sort=None, fieldurl=False, viewurl=False, facets=None, facetfields=None,
+    facetcount=None, facetsdepth=None
+):
     """Return the results for a query on a specific domain in EBI
 
-    domain: domain id in EBI 
-    query: query for EBI
-    fields: 
+    domain: domain id in EBI (accessible with get_domains)
+    query: query for EBI (the searchable fields can be accessed with
+    get_searchable_fields)
+    fields: fields to retrieve for the query (the fields can be accessed with
+    get_retrievable_fields), separated by comma
+    size: number of entries to retrieve
+    start: index of the first entry in the results
+    order: order to sort the results (ascending or descending), should come
+    along with "sortfield" and not allowed to use with "sort" parameters
+    sortfield: single field identifier to sort on (the fields can be accessed
+    with get_sortable_fields)
+    sort: comma separated values of sorting criteria with field_id:order
+    (e.g. boost:descending,length:descending), should not be used in
+    conjunction with any of 'sortfield' and 'order' parameters
+    fieldurl: boolean to indicate whether field links are included (the
+    returned links mean direct URLs to the data entries in original portals)
+    viewurl: boolean to indicate whether other view links (than fieldurl) on an
+    entry are included
+    facets: comma separated values of facet selections to apply on search
+    results with facet_id:facet_value (e.g. keywords:Glycolysis). The facet id
+    can be accessed with get_facet_fields
+    facetfields: comma separated values of field identifiers associated with
+    facets to retrieve
+    facetcount: number of facet values to retrieve
+    facetsdepth: number of level in the hierarchy to retrieve
     """
+    url = baseUrl + '/'
 
-    url = baseUrl + '/' + domain + '?query=' + query +'&fields=' + fields + '&size=' + size + '&start=' + start + '&fieldurl=' + fieldurl + '&viewurl=' + viewurl + '&sortfield=' + sortfield + '&order=' + order + '&sort=' + sort
-    #prog getResults        <domain> <query> <fields> [OPTIONS: --size | --start | --fieldurl | --viewurl | --sortfield | --order | --sort ] 
+    check_domain(domain)
+
+    url += domain
+    url += '?query=' + query
+
+    check_retrievable_fields(fields, domain)
+    url += '&fields=' + fields
+
+    result_nb = get_number_of_results(domain, query)
+    if size is not None:
+        if size > 100:
+            err_str = "Size (number of entries to retrieve) must be lower "
+            err_str += "than 100"
+            raise ValueError(err_str)
+        if size > result_nb:
+            err_str = "Size (number of entries to retrieve) must be lower "
+            err_str += "than the number of expected results for the query"
+            raise ValueError(err_str)
+        url += '&size=%s' % (size)
+
+    if start is not None:
+        if start > 250000:
+            err_str = "Start (index of the first entry in the results) "
+            err_str += "must be lower than 250,000"
+            raise ValueError(err_str)
+        if start > result_nb:
+            err_str = "Start (index of the first entry in the results) must "
+            err_str += "be lower than the number of expected results for the "
+            err_str += "query"
+            raise ValueError(err_str)
+        url += '&start=%s' % (start)
+
+    if order is not None or sortfield is not None:
+        if sortfield is None:
+            err_str = "Order should come along with 'sortfield' parameters"
+            raise ValueError(err_str)
+        if order is None:
+            err_str = "Sortfield should come along with 'order' parameters"
+            raise ValueError(err_str)
+        check_order(order)
+        check_sortable_field(sortfield, domain)
+        url += '&order=%s' % (order)
+        url += '&sortfield=%s' % (sortfield)
+
+    if sort is not None:
+        if order is not None or sortfield is not None:
+            err_str = "Sort should not come along with 'sortfield' or 'order' "
+            err_str += "parameters"
+            raise ValueError(err_str)
+        for criteria in sort.split(","):
+            split_criteria = criteria.split(":")
+            check_sortable_field(split_criteria[0], domain)
+            check_order(split_criteria[1])
+
+    if fieldurl:
+        url += '&fieldurl=true'
+    else:
+        url += '&fieldurl=false'
+
+    if viewurl:
+        url += '&viewurl=true'
+    else:
+        url += '&viewurl=false'
+
+    if facets is not None:
+        for facet in facets.split(","):
+            check_facet_field(facet.split(":")[0], domain)
+        url += '&facets=%s' % (facets)
+
+    if facetfields is not None:
+        url += '&facetfields=%s' % (facetfields)
+
+    if facetcount is not None:
+        url += '&facetcount=%s' % (facetcount)
+
+    if facetsdepth is not None:
+        url += '&facetsdepth=%s' % (facetsdepth)
+
+    r = requests.get(
+        url,
+        headers={"accept": "application/json"})
+    r.raise_for_status()
+    return r.json()['entries']
+
 
 if __name__ == '__main__':
-    #print(get_domain_details("allebi"))
-    #print(get_number_of_results(
-    #    "metagenomics_runs", 
-    #    "experiment_type:(metagenomic)"))
-    #print(get_domains(verbose = True))
-    #print_domain_hierarchy()
-    get_fields("metagenomics_runs")
-
+    # print(get_domain_details("allebi"))
+    # print(get_number_of_results(
+    #     "metagenomics_runs",
+    #     "experiment_type:(metagenomic)"))
+    # print(get_domains(verbose = True))
+    # print_domain_hierarchy()
+    # get_fields("metagenomics_runs")
+    # get_results(
+    #     domain="metagenomics_run",
+    #     query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
+    #     fields="id,experiment_type")
+    # get_results(
+    #     domain="metagenomics_runs",
+    #     query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
+    #     fields="id,experiment_tye")
+    res = get_domain_search_results(
+        domain="metagenomics_runs",
+        query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
+        fields="id,experiment_type",
+        size=20)
+    print(res)
+    res = get_domain_search_results(
+        domain="metagenomics_runs",
+        query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
+        fields="id,experiment_type",
+        size=10)
+    print(res)
+    res = get_domain_search_results(
+        domain="metagenomics_runs",
+        query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
+        fields="id,experiment_type",
+        size=10,
+        start=10)
+    print(res)
