@@ -455,7 +455,7 @@ def get_all_domain_search_results(
     facetsdepth: number of level in the hierarchy to retrieve
     """
     result_nb = get_number_of_results(domain, query)
-    quotient = result_nb / sizeLimit
+    quotient = int(result_nb / float(sizeLimit))
     start = 0
     all_results = []
     for i in range(quotient):
