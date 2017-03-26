@@ -27,7 +27,6 @@ def main():
     help='File to export the entry content (optional)')
 def get_entries(domain, entryid, field, fieldurl, viewurl, file):
     """Return content of entries on a specific domain in EBI"""
-    click.echo("get_entries for %s" % (domain))
     entries = ebisearch.get_entries(
         domain,
         ",".join(entryid),
@@ -76,7 +75,30 @@ def get_entries(domain, entryid, field, fieldurl, viewurl, file):
     else:
         pprint(entries)
 
+
+@click.command('get_domains', short_help='Get domains')
+@click.option('--file',
+    required=False,
+    type=click.Path(dir_okay=True, writable=True),
+    help='File to export the domain information (optional)')
+def get_domains(file):
+    """Return the list of domains in EBI"""
+    domains = ebisearch.get_domains(verbose=False)
+    if file:
+        with open(file, "w") as output_file:
+            s = "id\tname\n"
+            output_file.write(s)
+
+            for domain in domains:
+                s = "%s\t" % (domain)
+                s += "%s\n" % (domains[domain])
+                output_file.write(s)
+    else:
+        pprint(domains)
+
+
 main.add_command(get_entries)
+main.add_command(get_domains)
 
 
 if __name__ == "__main__":
