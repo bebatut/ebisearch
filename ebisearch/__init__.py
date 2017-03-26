@@ -6,6 +6,7 @@ baseUrl = 'http://www.ebi.ac.uk/ebisearch/ws/rest'
 sizeLimit = 100
 startLimit = 250000
 
+
 def get_domain_details(domain):
     """Return a dictionary with the details of a given domain in EBI
 
@@ -424,8 +425,8 @@ def get_domain_search_results(
 
 
 def get_all_domain_search_results(
-    domain, query, fields, order=None, sortfield=None, sort=None, 
-    fieldurl=False, viewurl=False, facets=None, facetfields=None, 
+    domain, query, fields, order=None, sortfield=None, sort=None,
+    fieldurl=False, viewurl=False, facets=None, facetfields=None,
     facetcount=None, facetsdepth=None
 ):
     """Return the all the results for a query on a specific domain in EBI
@@ -536,7 +537,8 @@ def get_entries(domain, entryids, fields, fieldurl=False, viewurl=False):
 
 
 def get_field_topterms(
-    domain, fieldid, size=15, excludes=None, excludesets=None):
+    domain, fieldid, size=15, excludes=None, excludesets=None
+):
     """Return a list of top terms in a field of a specific domain in EBI
 
     domain: domain id in EBI (accessible with get_domains)
@@ -564,7 +566,7 @@ def get_field_topterms(
 
 
 def get_number_of_morelikethis(domain, entryid):
-    """"Return the number of entries similar to an entry of a specific domain 
+    """"Return the number of entries similar to an entry of a specific domain
     in EBI
 
     domain: domain id in EBI
@@ -587,7 +589,8 @@ def get_number_of_morelikethis(domain, entryid):
 def get_morelikethis(
     domain, entryid, size=15, start=0, fields=None, fieldurl=False,
     viewurl=False, mltfields=None, mintermfreq=None, mindocfreq=None,
-    maxqueryterm=None, excludes=None, excludesets=None):
+    maxqueryterm=None, excludes=None, excludesets=None
+):
     """Return a list of similar entries to an entry of a specific domain in EBI
 
     domain: domain id in EBI (accessible with get_domains)
@@ -599,13 +602,13 @@ def get_morelikethis(
     returned links mean direct URLs to the data entries in original portals)
     viewurl: boolean to indicate whether other view links (than fieldurl) on an
     entry are included
-    mltfields: comma separated values of field identifiers to be used for 
+    mltfields: comma separated values of field identifiers to be used for
     generating a query
-    mintermfreq: minimum term frequency (any terms whose frequency is below this 
-    value will be ignore from a base entry)
-    mindocfreq: maximum document frequency (any terms which occur in at least 
+    mintermfreq: minimum term frequency (any terms whose frequency is below
+    this value will be ignore from a base entry)
+    mindocfreq: maximum document frequency (any terms which occur in at least
     this number of entries will be ignored)
-    maxqueryterm: maximum number of query terms that will be included in any 
+    maxqueryterm: maximum number of query terms that will be included in any
     generated query (max. 25)
     excludes: comma separated values of terms to be excluded
     excludesets: comma separated values of stop-word sets to be excluded
@@ -645,7 +648,7 @@ def get_morelikethis(
     if viewurl:
         url += '&viewurl=true'
     else:
-        url += '&viewurl=false' 
+        url += '&viewurl=false'
 
     if mltfields is not None:
         url += '&fields=%s' % (mltfields)
@@ -665,4 +668,3 @@ def get_morelikethis(
         headers={"accept": "application/json"})
     r.raise_for_status()
     return r.json()['entries']
-    
