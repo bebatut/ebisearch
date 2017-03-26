@@ -10,6 +10,52 @@ def main():
     pass
 
 
+def write_simple_dict_content(dictionary, file):
+    """Write the content of a simple dictionary (keys and values) in a file"""
+    with open(file, "w") as output_file:
+        s = "id\tname\n"
+        output_file.write(s)
+
+        for entry in dictionary:
+            s = "%s\t" % (entry)
+            s += "%s\n" % (dictionary[entry])
+            output_file.write(s)
+
+
+@click.command('get_domains', short_help='Get domains')
+@click.option('--file',
+    required=False,
+    type=click.Path(dir_okay=True, writable=True),
+    help='File to export the domain information (optional)')
+def get_domains(file):
+    """Return the list of domains in EBI"""
+    domains = ebisearch.get_domains(verbose=False)
+    if file:
+        write_simple_dict_content(domains, file)
+    else:
+        pprint(domains)
+
+
+@click.command('get_fields', short_help='Get retrievable fields')
+@click.option('--domain', help='Domain id in EBI (accessible with get_domains)')
+@click.option(
+    '--field_type',
+    help='Type fo field',
+    type=click.Choice(
+        ["searchable", "retrievable", "sortable", "facet", "topterms"]))
+@click.option('--file',
+    required=False,
+    type=click.Path(dir_okay=True, writable=True),
+    help='File to export the domain information (optional)')
+def get_fields(domain, field_type, file):
+    """Return the list of fields of a type for a specific domain in EBI"""
+    fields = ebisearch.get_specific_fields(domain, field_type, verbose=False)
+    if file:
+        write_simple_dict_content(fields, file)
+    else:
+        pprint(fields)
+
+
 @click.command('get_entries', short_help='Get entry content')
 @click.option('--domain', help='Domain id in EBI (accessible with get_domains)')
 @click.option(
@@ -76,29 +122,9 @@ def get_entries(domain, entryid, field, fieldurl, viewurl, file):
         pprint(entries)
 
 
-@click.command('get_domains', short_help='Get domains')
-@click.option('--file',
-    required=False,
-    type=click.Path(dir_okay=True, writable=True),
-    help='File to export the domain information (optional)')
-def get_domains(file):
-    """Return the list of domains in EBI"""
-    domains = ebisearch.get_domains(verbose=False)
-    if file:
-        with open(file, "w") as output_file:
-            s = "id\tname\n"
-            output_file.write(s)
-
-            for domain in domains:
-                s = "%s\t" % (domain)
-                s += "%s\n" % (domains[domain])
-                output_file.write(s)
-    else:
-        pprint(domains)
-
-
-main.add_command(get_entries)
 main.add_command(get_domains)
+main.add_command(get_fields)
+main.add_command(get_entries)
 
 
 if __name__ == "__main__":
