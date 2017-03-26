@@ -46,7 +46,7 @@ def get_domains(file):
 @click.option('--file',
     required=False,
     type=click.Path(dir_okay=True, writable=True),
-    help='File to export the domain information (optional)')
+    help='(Optional) File to export the domain information')
 def get_fields(domain, field_type, file):
     """Return the list of fields of a type for a specific domain in EBI"""
     fields = ebisearch.get_specific_fields(domain, field_type, verbose=False)
@@ -61,16 +61,16 @@ def get_fields(domain, field_type, file):
 @click.option(
     '--entryid',
     multiple=True,
-    help='Entry identifier to retrieve (multiple possible)')
+    help='(Multiple) Entry identifier to retrieve')
 @click.option('--field',
     multiple=True,
-    help='Field to export (accessible with get_retrievable_fields, multiple possible)')
+    help='(Multiple) Field to export (accessible with get_fields with retrievable as type')
 @click.option('--fieldurl', is_flag=True, help='Include the field links')
 @click.option('--viewurl', is_flag=True, help='Include other view links')
 @click.option('--file',
     required=False,
     type=click.Path(dir_okay=True, writable=True),
-    help='File to export the entry content (optional)')
+    help='(Optional) File to export the entry content')
 def get_entries(domain, entryid, field, fieldurl, viewurl, file):
     """Return content of entries on a specific domain in EBI"""
     entries = ebisearch.get_entries(
@@ -122,9 +122,106 @@ def get_entries(domain, entryid, field, fieldurl, viewurl, file):
         pprint(entries)
 
 
+@click.command('get_query_results', short_help='Get results for a query')
+@click.option('--domain', help='Domain id in EBI (accessible with get_domains)')
+@click.option('--query', help='Query (searchable fields accessible with \
+    get_fields with searchable as type)')
+@click.option('--field',
+    multiple=True,
+    help='(Multiple) Field to export (accessible with get_fields with\
+    retrievable as type)')
+@click.option('--order',
+    required=False,
+    type=click.Choice(["ascending", "descending"]),
+    help='(Optional) Order to sort the results (optional), should come along \
+    with "sortfield" and not allowed to use with "sort" parameters')
+@click.option(
+    '--sortfield',
+    required=False,
+    help='(Optional) Field to sort on (accessible via get_fields with sortable \
+    as option), should come along with "sortfield"')
+@click.option('--sort',
+    multiple=True,
+    required=False,
+    help='(Optional, Multiple) Sorting criteria with field_id:order (field_id \
+    accessible with get_fields with retrievable as type), should not be used \
+    in conjunction with any of "sortfield" and "order" parameters')
+@click.option('--fieldurl', is_flag=True, help='Include the field links')
+@click.option('--viewurl', is_flag=True, help='Include other view links')
+@click.option('--facets',
+    multiple=True,
+    required=False,
+    help='(Optional, Multiple) Facet selections to apply on search results \
+    with facet_id:facet_value (facet_id accessible with get_fields with facet \
+    as type)')
+@click.option('--facetfields',
+    multiple=True,
+    required=False,
+    help='(Optional, Multiple) Facet field identifiers associated with facets \
+    to retrieve (facet_id accessible with get_fields with facet as type)')
+@click.option('--facetcount',
+    type=int,
+    required=False,
+    help='(Optional) Number of facet values to retrieve')
+@click.option('--facetsdepth',
+    type=int,
+    required=False,
+    help='(Optional) Number of levels in the facet hierarchy to retrieve')
+@click.option('--file',
+    required=False,
+    type=click.Path(dir_okay=True, writable=True),
+    help='(Optional) File to export the entry content')
+def get_query_results(
+    domain, query, field, order, sortfield, sort, fieldurl, viewurl, facets, 
+    facetfields, facetcount, facetsdepth, file):
+    """Return the all the results for a query on a specific domain in EBI"""
+
+    if not order:
+        order = None
+    if not sortfield:
+        sortfield = None
+    if not sort:
+        sort = None
+    else:
+        sort = ",".join(sort)
+    if not facets:
+        facets = None
+    else:
+        facets = ",".join(facets)
+    if not facetfields:
+        facetfields = None
+    else:
+        facetfields = ",".join(facetfields)
+    if not facetcount:
+        facetcount = None
+    if not facetsdepth:
+        facetsdepth = None
+
+    results = ebisearch.get_all_domain_search_results(
+        domain=domain,
+        query=query,
+        fields=",".join(field),
+        order=order,
+        sortfield=sortfield,
+        sort=sort, 
+        fieldurl=fieldurl,
+        viewurl=viewurl,
+        facets=facets,
+        facetfields=facetfields,
+        facetcount=facetcount,
+        facetsdepth=facetsdepth)
+    
+    if file:
+        click.echo("file")
+    else:
+        pprint(results)
+    
+
+
 main.add_command(get_domains)
 main.add_command(get_fields)
 main.add_command(get_entries)
+main.add_command(get_query_results)
 
 
 if __name__ == "__main__":
