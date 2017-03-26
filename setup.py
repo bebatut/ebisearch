@@ -11,6 +11,14 @@ setup(
     keywords = "api api-client ebi",
     url = "https://github.com/bebatut/ebisearch",
     packages=find_packages(),
+    entry_points={
+          'console_scripts': [
+              'ebisearch = ebisearch.__main__:main'
+          ]
+      },
+    install_requires=[
+        'Click',
+    ],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Environment :: Web Environment",
