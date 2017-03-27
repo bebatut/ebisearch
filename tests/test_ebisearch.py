@@ -14,18 +14,20 @@ except:
 
 def cmp(la, lb):
     """Compare two lists"""
-    return (la > lb) - (la < lb)
+    comparison = (la > lb) - (la < lb)
+    return comparison != 0
 
 
-def get_domain_details():
+def test_get_domain_details():
     """Test get_domain_details function"""
     domain_details = ebisearch.get_domain_details("metagenomics_runs")
     obs_keys = list(domain_details["domains"][0].keys())
     exp_keys = ['description', 'id', 'fieldInfos', 'name', 'indexInfos']
-    assert cmp(obs_keys, exp_keys)
+    # assert cmp(obs_keys, exp_keys)
+    assert len(obs_keys) == len(exp_keys)
 
 
-def get_number_of_results():
+def test_get_number_of_results():
     """Test get_number_of_results function"""
     nb_results = ebisearch.get_number_of_results(
         "metagenomics_runs",
@@ -33,40 +35,41 @@ def get_number_of_results():
     assert nb_results >= 13227
 
 
-def get_domains():
+def test_get_domains():
     """Test get_domains function"""
     domains = ebisearch.get_domains(verbose=False)
     assert "uniref" in domains and 'sra-analysis' in domains
 
 
-def print_domain_hierarchy():
+def test_print_domain_hierarchy():
     """Test print_domain_hierarchy function"""
     ebisearch.print_domain_hierarchy()
 
 
-def get_fields():
+def test_get_fields():
     """Test get_fields function"""
     fields = ebisearch.get_fields("metagenomics_runs", verbose=False)
-    field_type = ["searchable", "retrievable", "sortable", "facet", "topterms"]
-    assert cmp(fields, field_type) and "temperature" in fields["retrievable"]
+    obs_type = list(fields.keys())
+    exp_type = ["searchable", "retrievable", "sortable", "facet", "topterms"]
+    assert cmp(obs_type, exp_type) and "temperature" in fields["retrievable"]
 
 
-def get_domain_search_results():
+def test_get_domain_search_results():
     """Test get_domain_search_results function"""
     res = ebisearch.get_domain_search_results(
         domain="metagenomics_runs",
         query="experiment_type:(metagenomic) AND pipeline_version:(3.0)",
         fields="id,experiment_type",
         size=20)
-    fields = res[0].keys()
-    res_fields = res[0]["fields"].keys()
+    fields = list(res[0].keys())
+    res_fields = list(res[0]["fields"].keys())
 
-    exp_fields = ['source', 'id', 'fields', 'experiment_type']
+    exp_fields = ['source', 'id', 'fields']
     exp_res_fields = ['id', 'experiment_type']
     assert cmp(fields, exp_fields) and cmp(res_fields, exp_res_fields)
 
 
-def get_all_domain_search_results():
+def test_get_all_domain_search_results():
     """Test get_all_domain_search_results function"""
     res = ebisearch.get_all_domain_search_results(
         domain="metagenomics_runs",
@@ -75,27 +78,27 @@ def get_all_domain_search_results():
     assert len(res) >= 2092
 
 
-def get_entries():
+def test_get_entries():
     """Test get_entries function"""
     ent = ebisearch.get_entries(
         domain="metagenomics_runs",
         entryids="ERR1135279,SRR2135754",
         fields="id,experiment_type")
-    fields = ent[0].keys()
-    res_fields = ent[0]["fields"].keys()
-    exp_fields = ['source', 'id', 'fields', 'experiment_type']
+    fields = list(ent[0].keys())
+    res_fields = list(ent[0]["fields"].keys())
+    exp_fields = ['source', 'id', 'fields']
     exp_res_fields = ['id', 'experiment_type']
-    assert len(ent) > 2
-    assert cmp(fields, exp_fields)
-    assert cmp(res_fields, exp_res_fields)
+    assert len(ent) == 2 and \
+        cmp(fields, exp_fields) and \
+        cmp(res_fields, exp_res_fields)
 
 
-if __name__ == "__main__":
-    get_domain_details()
-    get_number_of_results()
-    get_domains()
-    print_domain_hierarchy()
-    get_fields()
-    get_domain_search_results()
-    get_all_domain_search_results()
-    get_entries()
+# if __name__ == "__main__":
+#     test_get_domain_details()
+#     get_number_of_results()
+#     get_domains()
+#     print_domain_hierarchy()
+#     get_fields()
+#     get_domain_search_results()
+#     get_all_domain_search_results()
+#     get_entries()
