@@ -11,9 +11,9 @@ setup(
     url="https://github.com/bebatut/ebisearch",
     packages=find_packages(),
     entry_points={
-          'console_scripts': [
-              'ebisearch = ebisearch.__main__:main'
-          ]
+        'console_scripts': [
+            'ebisearch = ebisearch.__main__:main'
+        ]
       },
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
@@ -27,6 +27,7 @@ setup(
     extras_require={
         'testing': ["pytest"],
     },
-    tests_require=tests_require,
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
     install_requires=['requests', 'Click', 'flake8', 'pprint']
 )
