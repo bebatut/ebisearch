@@ -24,4 +24,9 @@ setup(
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering"
     ],
+    extras_require={
+        'testing': ["pytest"],
+    },
+    tests_require=tests_require,
+    install_requires=['requests', 'Click', 'flake8', 'pprint']
 )

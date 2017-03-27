@@ -1,6 +1,5 @@
 init:
-	pip install -r requirements.txt
-	pip install --editable .
+	python setup.py install
 
 test:
 	flake8 --exclude=.git,build .
