@@ -14,8 +14,7 @@ except:
 
 def cmp(la, lb):
     """Compare two lists"""
-    comparison = (la > lb) - (la < lb)
-    return comparison != 0
+    return all(s in lb for s in la) and all(s in la for s in lb)
 
 
 def test_get_domain_details():
