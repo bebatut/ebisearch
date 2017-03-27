@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 setup(
     name="ebisearch",
     version="0.0.1",
-    author="Bérénice Batut",
+    author="Berenice Batut",
     author_email="berenice.batut@gmail.com",
     description=("A Python library for interacting with EBI Search's API"),
     license="MIT",
