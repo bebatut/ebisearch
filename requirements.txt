@@ -1,5 +1,0 @@
-requests
-Click
-pytest
-flake8
-pprint
