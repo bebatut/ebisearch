@@ -3,6 +3,6 @@ init:
 
 test:
 	flake8 --exclude=.git,build .
-	pytest tests
+	python setup.py test
 
 .PHONY: init test
