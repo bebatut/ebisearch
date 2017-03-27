@@ -1,0 +1,232 @@
+{
+    "description": 
+    {
+        "submitted_nucleotide_reads":
+        {
+            "format": "FastQ",
+            "description": "Submitted nucleotide reads"
+        },
+        "ProcessedReads":
+        {
+            "format": "FASTA",
+            "description": "Processed nucleotide reads"
+        },
+        "ReadsWithPredictedCDS":
+        {
+            "format": "FASTA",
+            "description": "Processed reads with pCDS"
+        },
+        "ReadsWithMatches":
+        {
+            "format": "FASTA",
+            "description": "Processed reads with annotation"
+        },
+        "ReadsWithoutMatches":
+        {
+            "format": "FASTA",
+            "description": "Processed reads without annotation"
+        },
+        "PredictedCDS":
+        {
+            "format": "FASTA",
+            "description": "Predicted CDS"
+        },
+        "PredictedCDSWithAnnotation":
+        {
+            "format": "FASTA",
+            "description": "Predicted CDS with annotation"
+        },
+        "PredictedCDSWithoutAnnotation":
+        {
+            "format": "FASTA",
+            "description": "Predicted CDS without annotation"
+        },
+        "PredictedORFWithoutAnnotation":
+        {
+            "format": "FASTA",
+            "description": "Predicted ORF without annotation"
+        },
+        "ncRNA-tRNA-FASTA":
+        {
+            "format": "FASTA",
+            "description": "Predicted tRNAs"
+        },
+        "summary":
+        {
+            "format": "TXT",
+            "description": "Number of sequence reads per quality control step"
+        },
+        "stats":
+        {
+            "format": "TXT",
+            "description": "Quality control statistics"
+        },
+        "length":
+        {
+            "format": "TSV",
+            "description": "Read length distribution"
+        },
+        "gc_bin":
+        {
+            "format": "TSV",
+            "description": "Read GC distribution"
+        },
+        "base":
+        {
+            "format": "TSV",
+            "description": "Nucleotide position distribution"
+        },
+        "InterProScan":
+        {
+            "format": "TSV",
+            "description": "InterPro matches"
+        },
+        "GOAnnotations":
+        {
+            "format": "CSV",
+            "description": "Complete GO annotation"
+        },
+        "GOSlimAnnotations":
+        {
+            "format": "CSV",
+            "description": "GO slim annotation"
+        },
+        "5S-rRNA-FASTA":
+        {
+            "format": "FASTA",
+            "description": "Reads encoding 5S rRNA"
+        },
+        "23S-rRNA-FASTA": 
+        {
+            "format": "FASTA",
+            "description": "Reads encoding 23S rRNA"
+        },
+        "16S-rRNA-FASTA": 
+        {
+            "format": "FASTA",
+            "description": "Reads encoding 16S rRNA"
+        },
+        "OTU-TSV":
+        {
+            "format": "TSV",
+            "description": "OTUs, reads and taxonomic assignments"
+        },
+        "OTU-BIOM":
+        {
+            "format": "Biom",
+            "description": "OTUs, reads and taxonomic assignments"
+        },
+        "OTU-table-HDF5-BIOM":
+        {
+            "format": "HDF5 Biom",
+            "description": "OTUs, reads and taxonomic assignments"
+        },
+        "OTU-table-JSON-BIOM":
+        {
+            "format": "JSON Biom",
+            "description": "OTUs, reads and taxonomic assignments"
+        },
+        "NewickPrunedTree": 
+        {
+            "format": "Newick",
+            "description": "Phylogenetic tree"
+        },
+        "NewickTree": 
+        {
+            "format": "Newick",
+            "description": "Phylogenetic tree"
+        }      
+    },
+    "pipeline_version":
+    {
+        "1.0":
+        {
+            "sequences": [
+                "submitted_nucleotide_reads",
+                "ProcessedReads",
+                "ReadsWithPredictedCDS",
+                "ReadsWithMatches",
+                "ReadsWithoutMatches",
+                "PredictedCDS",
+                "PredictedCDSWithoutAnnotation",
+                "PredictedORFWithoutAnnotation"],
+            "qc-stats": [
+                "summary"],
+            "function": [
+                "InterProScan",
+                "GOAnnotations",
+                "GOSlimAnnotations"],
+            "taxonomy": [
+                "5S-rRNA-FASTA",
+                "16S-rRNA-FASTA",
+                "23S-rRNA-FASTA",
+                "OTU-TSV",
+                "OTU-BIOM",
+                "NewickTree"]
+        },
+        "2.0":
+        {
+            "sequences": [
+                "submitted_nucleotide_reads",
+                "ProcessedReads",
+                "ReadsWithPredictedCDS",
+                "ReadsWithMatches",
+                "ReadsWithoutMatches",
+                "PredictedCDS",
+                "PredictedCDSWithoutAnnotation",
+                "PredictedORFWithoutAnnotation"],
+            "qc-stats": [
+                "summary"],
+            "function": [
+                "InterProScan",
+                "GOAnnotations",
+                "GOSlimAnnotations"],
+            "taxonomy": [
+                "5S-rRNA-FASTA",
+                "16S-rRNA-FASTA",
+                "23S-rRNA-FASTA",
+                "OTU-TSV",
+                "OTU-table-HDF5-BIOM",
+                "OTU-table-JSON-BIOM",
+                "NewickPrunedTree"]
+        },
+        "3.0":
+        {
+            "sequences": [
+                "submitted_nucleotide_reads",
+                "ProcessedReads",
+                "ReadsWithPredictedCDS",
+                "ReadsWithMatches",
+                "ReadsWithoutMatches",
+                "PredictedCDSWithAnnotation",
+                "PredictedCDSWithoutAnnotation",
+                "PredictedORFWithoutAnnotation",
+                "ncRNA-tRNA-FASTA"],
+            "qc-stats": [
+                "summary",
+                "stats",
+                "length",
+                "gc_bin",
+                "base"],
+            "function": [
+                "InterProScan",
+                "GOAnnotations",
+                "GOSlimAnnotations"],
+            "taxonomy": [
+                "5S-rRNA-FASTA",
+                "16S-rRNA-FASTA",
+                "23S-rRNA-FASTA",
+                "OTU-TSV",
+                "OTU-table-HDF5-BIOM",
+                "OTU-table-JSON-BIOM",
+                "NewickPrunedTree"]
+        }
+    },
+    "sections":
+    {
+        "sequences": "Sequence data",
+        "qc-stats": "Quality control",
+        "function": "Functional analysis",
+        "taxonomy": "Taxonomic analysis"
+    }
+}

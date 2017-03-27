@@ -1,0 +1,145 @@
+#!/usr/bin/env python
+
+import click
+import ebisearch
+from pprint import pprint
+import json
+import requests
+
+
+with open('data/ebi_metagenomics_run_data.json', 'r') as json_data:
+    run_data = json.load(json_data)
+
+@click.group()
+def main():
+    pass
+    
+
+def get_pipeline_version(run):
+    """Get the pipeline version for a run
+
+    run: id of a run
+    """
+    run_details = ebisearch.get_entries(
+        domain = "metagenomics_runs",
+        entryids = run,
+        fields = "pipeline_version",
+        fieldurl=False,
+        viewurl=False)
+    version = run_details[0]["fields"]["pipeline_version"][0]
+    return version
+
+def get_possible_run_data(run):
+    """Get the possible data information for a run
+
+    run: id of a run
+    """
+    version = get_pipeline_version(run)
+    data = run_data["pipeline_version"][version]
+    return data
+
+
+@click.command(
+    'print_possible_run_data',
+    short_help='Get possible data for a run')
+@click.option(
+    '--run',
+    help='Id of a run in EBI metagenomics')
+def print_possible_run_data(run):
+    """Print information about the possible data to download for a run"""
+    data = get_possible_run_data(run)
+    for section in data:
+        print(run_data["sections"][section])
+        for d in data[section]:
+            print("\t%s" % (d))
+            for detail, value in run_data["description"][d].items():
+                print("\t\t%s: %s" % (detail, value))
+
+
+def check_data(run, data):
+    """Check that a data type can be downloaded for a run
+
+    run: id of a run
+    data: type of data to check
+    """
+    possible_data = get_possible_run_data(run)
+    data_found = False
+    section = ''
+    for sect in possible_data:
+        if data in possible_data[sect]:
+            data_found = True
+            section = sect
+    if not data_found:
+        err_str = "Data %s can not be downloaded for %s" % (data, run)
+        raise ValueError(err_str)
+    return section
+
+
+def check_chunk_use(data, data_section):
+    """Check if a type of data would require the use of chunk
+
+    data: type of data to check
+    data_section: section corresponding to the data
+    run_url: URL of the run
+    """
+    return (data_section == "sequences" and data != "ncRNA-tRNA-FASTA") or \
+            (data_section == "function" and data != "InterProScan")
+
+
+def download(url, file, write_type):
+    """Download from an URL and redirect the content into a file
+
+    url: URL where the data are
+    file: path to file where the data are written
+    write_type: "wb" 
+    """
+    r = requests.get(url, stream=True)
+    r.raise_for_status()
+    with open(file, write_type) as fd:
+        for chunk in r.iter_content(chunk_size=128):
+            fd.write(chunk)
+
+
+@click.command('download_run_data', short_help='Download run data')
+@click.option(
+    '--run',
+    help='Id of a run in EBI metagenomics')
+@click.option(
+    '--data',
+    help='Data to download for the run (accessible with get_possible_run_data')
+@click.option(
+    '--file',
+    type=click.Path(dir_okay=True, writable=True),
+    help='File to export downloaded data')
+def download_run_data(run, data, file):
+    """Download data for a run"""
+    data_section = check_data(run, data)
+
+    run_details = ebisearch.get_entries(
+        domain = "metagenomics_runs",
+        entryids = run,
+        fields = "pipeline_version",
+        fieldurl=True,
+        viewurl=False)
+    run_url = run_details[0]['fieldURLs'][0]['value']
+
+    url = run_url + "/%s" % (data_section)
+    url += "/%s" % (data)
+    if check_chunk_use(data, data_section):
+        url += "/chunks"
+        chunk_nb_r = requests.get(url, headers={"accept": "application/json"})
+        chunk_nb_r.raise_for_status()
+        chunk_nb = chunk_nb_r.json()
+        for nb in range(0, chunk_nb):
+            chunk_url = url + "/%s" % (nb+1)
+            download(chunk_url, file, "ab")
+    else:
+        download(url, file, "wb")
+
+
+main.add_command(print_possible_run_data)
+main.add_command(download_run_data)
+
+
+if __name__ == "__main__":
+    main()
