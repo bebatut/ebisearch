@@ -15,6 +15,7 @@ setup(
             'ebisearch = ebisearch.__main__:main'
         ]
       },
+    scripts=['ebi_metagenomics'],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Environment :: Web Environment",
