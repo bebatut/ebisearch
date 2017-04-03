@@ -41,7 +41,7 @@ EBISearch is easy to use
       --file PATH      (Optional) File to export the entry content
       --help           Show this message and exit.
 
-It can also be used as a Python library
+It can also be used as a Python library:
 
 .. code-block:: python
 
@@ -66,8 +66,12 @@ To install EBISearch, simply:
 
     $ pip install ebisearch
 
-or 
+
+Tests
+-----
+
+EBISearch comes with tests:
 
 .. code-block:: bash
 
-    $ conda install ebisearch
+    $ make test
