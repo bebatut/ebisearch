@@ -1,11 +1,6 @@
 {
     "description": 
     {
-        "submitted_nucleotide_reads":
-        {
-            "format": "FastQ",
-            "description": "Submitted nucleotide reads"
-        },
         "ProcessedReads":
         {
             "format": "FASTA",
@@ -142,7 +137,6 @@
         "1.0":
         {
             "sequences": [
-                "submitted_nucleotide_reads",
                 "ProcessedReads",
                 "ReadsWithPredictedCDS",
                 "ReadsWithMatches",
@@ -167,7 +161,6 @@
         "2.0":
         {
             "sequences": [
-                "submitted_nucleotide_reads",
                 "ProcessedReads",
                 "ReadsWithPredictedCDS",
                 "ReadsWithMatches",
@@ -193,7 +186,6 @@
         "3.0":
         {
             "sequences": [
-                "submitted_nucleotide_reads",
                 "ProcessedReads",
                 "ReadsWithPredictedCDS",
                 "ReadsWithMatches",
