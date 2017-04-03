@@ -37,5 +37,11 @@ setup(
     },
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
-    install_requires=['requests', 'Click', 'flake8', 'pprint']
+    install_requires=[
+        'requests',
+        'Click',
+        'flake8',
+        'pprint'],
+    include_package_data=True,
+    package_data={'ebisearch_data': ['ebisearch_data/*.json']}
 )
