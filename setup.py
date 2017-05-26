@@ -40,8 +40,7 @@ setup(
     install_requires=[
         'requests',
         'Click',
-        'flake8',
-        'pprint'],
+        'flake8'],
     include_package_data=True,
     package_data={'ebisearch_data': ['ebisearch_data/*.json']}
 )
