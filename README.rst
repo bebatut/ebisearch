@@ -3,6 +3,8 @@ EBISearch
 
 .. image:: https://travis-ci.org/bebatut/ebisearch.svg?branch=master
     :target: https://travis-ci.org/bebatut/ebisearch
+.. image:: https://badge.fury.io/py/ebisearch.svg
+    :target: https://badge.fury.io/py/ebisearch
 
 EBISearch is a Python library for interacting with `EBI Search <http://www.ebi.ac.uk/ebisearch/overview.ebi>`_'s API.
 
