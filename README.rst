@@ -5,6 +5,8 @@ EBISearch
     :target: https://travis-ci.org/bebatut/ebisearch
 .. image:: https://badge.fury.io/py/ebisearch.svg
     :target: https://badge.fury.io/py/ebisearch
+.. image:: https://anaconda.org/bioconda/ebisearch/badges/installer/conda.svg
+    :target: https://anaconda.org/bioconda/ebisearch
 
 EBISearch is a Python library for interacting with `EBI Search <http://www.ebi.ac.uk/ebisearch/overview.ebi>`_'s API.
 
@@ -68,6 +70,11 @@ To install EBISearch, simply:
 
     $ pip install ebisearch
 
+or
+
+.. code-block:: bash
+
+    $ conda install ebisearch
 
 Tests
 -----
