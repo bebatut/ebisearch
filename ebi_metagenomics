@@ -91,7 +91,7 @@ def check_chunk_use(data, data_section):
     run_url: URL of the run
     """
     return (data_section == "sequences" and data != "ncRNA-tRNA-FASTA") or \
-            (data_section == "function" and data != "InterProScan")
+            (data_section == "function" and data == "InterProScan")
 
 
 def download(url, file, write_type):
