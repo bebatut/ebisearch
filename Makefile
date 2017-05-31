@@ -1,6 +1,9 @@
 init:
 	python setup.py install
 
+develop:
+	python setup.py develop
+
 test:
 	flake8 --exclude=.git,build .
 	python setup.py test
